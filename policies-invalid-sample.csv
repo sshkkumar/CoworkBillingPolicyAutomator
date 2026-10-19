@@ -1,0 +1,13 @@
+PolicyName,AssignmentType,Groups,Services,MonthlySpendingLimitType,MonthlySpendingLimitCredits,UserMonthlyBudgetLimitType,UserMonthlyBudgetLimitCredits,AlertEmails,PolicyAlertThresholdType,PolicyAlertThresholdValue,UserAlertThresholdType,UserAlertThresholdValue
+Short,AllUsers,,Copilot Cowork,Limited,12000,Limited,7000,admin@contoso.com,Percent,80,,
+Below Minimum Policy Credits,AllUsers,,Copilot Cowork,Limited,3000,Limited,7000,admin@contoso.com,Percent,80,,
+Below Minimum User Credits,AllUsers,,Copilot Cowork,Limited,12000,Limited,1500,admin@contoso.com,Percent,80,,
+User Above Policy Limit,AllUsers,,Copilot Cowork,Limited,5000,Limited,9000,admin@contoso.com,Percent,80,,
+Percent Without Any Limit,AllUsers,,Copilot Cowork,NoLimit,,NoLimit,,admin@contoso.com,Percent,80,,
+User Alert Without User Limit,AllUsers,,Copilot Cowork,Limited,12000,NoLimit,,admin@contoso.com,Percent,80,Percent,75
+Percent Over One Hundred,AllUsers,,Copilot Cowork,Limited,12000,Limited,7000,admin@contoso.com,Percent,150,,
+Credits Exceed Policy Limit,AllUsers,,Copilot Cowork,Limited,12000,Limited,7000,admin@contoso.com,Credits,20000,,
+Unknown Service Policy,AllUsers,,Totally Unknown Agent,Limited,12000,Limited,7000,admin@contoso.com,Percent,80,,
+Groups Without Group List,Groups,,Copilot Cowork,Limited,12000,Limited,7000,admin@contoso.com,Percent,80,,
+Threshold Without Recipients,AllUsers,,Copilot Cowork,Limited,12000,Limited,7000,,Percent,80,,
+Value Without A Type Here,AllUsers,,Copilot Cowork,Limited,12000,Limited,7000,admin@contoso.com,,80,,

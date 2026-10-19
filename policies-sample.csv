@@ -1,0 +1,5 @@
+PolicyName,AssignmentType,Groups,Services,MonthlySpendingLimitType,MonthlySpendingLimitCredits,UserMonthlyBudgetLimitType,UserMonthlyBudgetLimitCredits,AlertEmails,PolicyAlertThresholdType,PolicyAlertThresholdValue,UserAlertThresholdType,UserAlertThresholdValue
+Cowork Standard Policy,AllUsers,,Copilot Cowork,Limited,12000,Limited,7000,billing-admins@contoso.com,Percent,80,Percent,75
+Cowork Engineering Pilot,Groups,Engineering Team;Platform Engineering,Copilot Cowork;Copilot Studio,Limited,25000,Limited,8000,finops@contoso.com;ops-lead@contoso.com,Percent,75,Credits,6000
+Cowork Unlimited Executives,Groups,Executive Leadership,Copilot Cowork,NoLimit,,NoLimit,,,,,,
+Cowork Finance Controlled,Groups,Finance Department,Copilot Cowork;Microsoft 365 Copilot,Limited,15000,Limited,2500,finance-ops@contoso.com,Credits,12000,Percent,90

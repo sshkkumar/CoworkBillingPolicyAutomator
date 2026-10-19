@@ -1,0 +1,36 @@
+{
+  "_comment": "Maps friendly agent/service names used in the CSV to the serviceId expected by POST /spendingPolicies/{id}/serviceSettings. The internal API doc does not publish a 'list services' endpoint, so this file is the authoritative mapping for the tool. EDIT THE ServiceId VALUES to match your tenant before committing policies. Run 'Get-CoworkServiceCatalog -FromExistingPolicies' to read the serviceIds already in use by existing policies in your tenant and print a ready-to-paste block. Names and aliases are matched case-insensitively. A raw GUID in the CSV is always accepted and passed through unmapped.",
+
+  "Services": [
+    {
+      "Name": "Copilot Cowork",
+      "Aliases": [ "Cowork", "M365 Copilot Cowork", "Microsoft 365 Copilot Cowork" ],
+      "ServiceId": "cowork",
+      "Verified": true
+    },
+    {
+      "Name": "Copilot Studio",
+      "Aliases": [ "Microsoft Copilot Studio", "MCS" ],
+      "ServiceId": "copilotStudio",
+      "Verified": false
+    },
+    {
+      "Name": "Microsoft 365 Copilot",
+      "Aliases": [ "M365 Copilot", "Copilot Chat" ],
+      "ServiceId": "microsoft365Copilot",
+      "Verified": false
+    },
+    {
+      "Name": "Security Copilot",
+      "Aliases": [ "Microsoft Security Copilot" ],
+      "ServiceId": "securityCopilot",
+      "Verified": false
+    },
+    {
+      "Name": "SharePoint Agents",
+      "Aliases": [ "SharePoint Agent" ],
+      "ServiceId": "sharePointAgents",
+      "Verified": false
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Runtime output
+logs/
+reports/
+
+# PowerShell/editor temporary files
+*.tmp
+*.bak
+~$*

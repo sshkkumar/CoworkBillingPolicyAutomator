@@ -1,0 +1,2 @@
+PolicyName,AssignmentType,Groups,Services,MonthlySpendingLimitType,MonthlySpendingLimitCredits,UserMonthlyBudgetLimitType,UserMonthlyBudgetLimitCredits,AlertEmails,PolicyAlertThresholdType,PolicyAlertThresholdValue,UserAlertThresholdType,UserAlertThresholdValue
+Cowork Execitives Policy New,Groups,Executive Leadership (ELT),Copilot Cowork,Limited,12000,Limited,7000,admin@DIAx46384244.onmicrosoft.com,Percent,80,Percent,75

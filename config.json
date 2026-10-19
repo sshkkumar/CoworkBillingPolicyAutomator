@@ -1,0 +1,57 @@
+﻿{
+    "_comment_graph":  "Base Graph API wiring. The effective billing root is composed as {GraphBaseUri}/{ApiVersion}/{BillingRootPath}. With the shipped defaults that resolves to https://graph.microsoft.com/beta/copilot/costManagement",
+    "GraphBaseUri":  "https://graph.microsoft.com",
+    "ApiVersion":  "beta",
+    "BillingRootPath":  "copilot/costManagement",
+    "DirectoryBaseUri":  "https://graph.microsoft.com/v1.0",
+    "_comment_billingRootPath":  "DOCUMENTED BEST GUESS. The internal API doc lists endpoint paths (/spendingPolicies, /getTenantCreditBalance(), /userBalances, ...) but not the root segment they hang off. If the startup connection probe reports HTTP 404, change BillingRootPath only - no code changes are required. Run Test-CoworkPolicyConnection -AutoDiscover to probe every entry in BillingRootPathCandidates and be told which one works.",
+    "BillingRootPathCandidates":  [
+                                      "copilot/costManagement",
+                                      "copilot/billing",
+                                      "admin/copilot/billing",
+                                      "copilot",
+                                      "admin/copilot",
+                                      "billing/copilot",
+                                      "copilot/admin/billing"
+                                  ],
+    "_comment_auth":  "Delegated interactive sign-in via Connect-MgGraph. Adjust scopes if your tenant\u0027s consent prompt reports an unknown or insufficient permission. TenantId and ClientId are optional; leave empty to use the default Microsoft Graph PowerShell application.",
+    "TenantId":  "",
+    "ClientId":  "",
+    "_comment_limits":  "Hard minimums are enforced as validation errors. Recommended values are enforced as warnings only - rows still pass validation and can still be committed.",
+    "Limits":  {
+                   "PolicyNameMinLength":  10,
+                   "PolicyNameMaxLength":  256,
+                   "PolicyMonthlyCreditsMinimum":  4000,
+                   "PolicyMonthlyCreditsRecommended":  10000,
+                   "UserMonthlyCreditsMinimum":  2000,
+                   "UserMonthlyCreditsRecommended":  7000,
+                   "AlertPercentMinimum":  1,
+                   "AlertPercentMaximum":  100,
+                   "AlertPercentHighWarning":  90,
+                   "TenantBalanceWarnUtilizationPercent":  80
+               },
+    "_comment_behaviour":  "Runtime behaviour toggles.",
+    "Behaviour":  {
+                      "EnforceTenantBalanceCeiling":  true,
+                      "EnforceUserLimitNotAbovePolicyLimit":  true,
+                      "RollbackOnPartialFailure":  true,
+                      "VerifyAfterCreate":  true,
+                      "MaxRetryAttempts":  5,
+                      "RetryBaseDelaySeconds":  2,
+                      "RequestTimeoutSeconds":  100
+                  },
+    "_comment_output":  "Report and log output. Relative paths are resolved against the tool root.",
+    "Output":  {
+                   "ReportDirectory":  "reports",
+                   "LogDirectory":  "logs",
+                   "MultiValueSeparator":  ";"
+               },
+    "Scopes":  [
+                   "CopilotCostManagement.Read.All",
+                   "CopilotCostManagement-Policy.ReadWrite.All",
+                   "CopilotCostManagement-Assignment.ReadWrite.All",
+                   "CopilotCostManagement-UserData.Read.All",
+                   "Group.Read.All",
+                   "User.Read.All"
+               ]
+}
