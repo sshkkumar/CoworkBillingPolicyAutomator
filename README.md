@@ -317,6 +317,8 @@ It cannot be combined with `-Commit`.
 7. **Export report** saves the results CSV anywhere you like
 8. **Manage existing policies** refreshes the tenant list; select one to preview deletion, then use **Delete selected** and confirm the warning to delete it. The GUI previews first and passes `-Force` only after your explicit confirmation.
 
+<img width="1741" height="1155" alt="image" src="https://github.com/user-attachments/assets/5ea7882a-7b41-4c86-ae53-d04e763021cc" />
+
 ---
 
 ## Tests
