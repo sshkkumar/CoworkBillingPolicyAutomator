@@ -20,6 +20,7 @@ the GUI).
 | `Cowork.CsvSchema.ps1` | CSV schema, parsing, **all request payload builders** |
 | `Cowork.Validation.ps1` | Every validation rule |
 | `Cowork.Creation.ps1` | Multi-step creation, rollback, read-back verification |
+| `Cowork.Deletion.ps1` | Exact-match, ETag-protected policy deletion |
 | `Cowork.Public.ps1` | `Test-CoworkPolicyFile`, `Invoke-CoworkPolicyImport`, reporting |
 | `Start-CoworkPolicyGui.ps1` | WinForms front end |
 | `config.json` | Graph base URI, scopes, limits, behaviour |
@@ -70,6 +71,17 @@ Get-CoworkPayloadLog
 
 # 5. Create the policies for real
 Invoke-CoworkPolicyImport -Path .\policies-sample.csv -Commit
+
+# Delete one policy safely: preview first (no DELETE is sent)
+Remove-CoworkSpendingPolicy -Name 'Cowork Standard Policy'
+# Commit the deletion; -Force skips the confirmation prompt
+Remove-CoworkSpendingPolicy -Name 'Cowork Standard Policy' -Commit -Force
+# An exact id can be used instead of a name
+Remove-CoworkSpendingPolicy -Id '<policy-id>' -Commit
+
+# Get all the policies
+Get-CoworkSpendingPolicy -Refresh | Select-Object id, displayName
+
 ```
 
 GUI:
@@ -234,7 +246,7 @@ Every run writes:
 |---|---|---|
 | Tenant balance | `GET /getTenantCreditBalance()` | tenant ceiling validation |
 | User balances | `GET /userBalances/{userId}`, `/serviceBalances`, `/serviceBalances/{serviceId}` | `Get-CoworkUserBalance` |
-| Policies | `GET`/`POST` `/spendingPolicies`, `GET`/`PATCH`/`DELETE` `/spendingPolicies/{id}` | list, create, verify, rollback |
+| Policies | `GET`/`POST` `/spendingPolicies`, `GET`/`PATCH`/`DELETE` `/spendingPolicies/{id}` | list, create, verify, rollback, exact-match deletion |
 | Group assignments | `GET`/`POST $ref`/`DELETE $ref` `.../assignedGroups` | assign and verify groups |
 | Alert settings | `GET`/`PATCH`/`DELETE` `.../emailThresholdSettings` | thresholds |
 | Alert recipients | `GET`/`POST $ref`/`DELETE $ref` `.../recipients` | recipients |
@@ -277,6 +289,8 @@ write call.
 | `Set-CoworkBillingRootPath -BillingRootPath <s>` | Persist a new base path to `config.json` |
 | `Test-CoworkPolicyFile -Path <csv> [-Offline]` | Validate only (alias of a non-commit import) |
 | `Invoke-CoworkPolicyImport -Path <csv> [-Commit] [-WhatIfPayload] [-Offline] [-ReportPath <p>]` | Main workflow |
+| `Remove-CoworkSpendingPolicy -Id <id> [-Commit] [-Force]` | Preview or delete one policy by exact id |
+| `Remove-CoworkSpendingPolicy -Name <name> [-Commit] [-Force]` | Preview or delete one policy by exact name |
 | `New-CoworkPolicyTemplate -Path <csv>` | Write a blank template |
 | `Get-CoworkTenantCreditBalance` | Tenant credit balance |
 | `Get-CoworkSpendingPolicy [-Id <id>]` | List or get policies |
@@ -301,6 +315,7 @@ It cannot be combined with `-Commit`.
 6. **Commit valid rows** stays disabled until a validation pass succeeds on the *current*
    file, and always asks for confirmation
 7. **Export report** saves the results CSV anywhere you like
+8. **Manage existing policies** refreshes the tenant list; select one to preview deletion, then use **Delete selected** and confirm the warning to delete it. The GUI previews first and passes `-Force` only after your explicit confirmation.
 
 ---
 

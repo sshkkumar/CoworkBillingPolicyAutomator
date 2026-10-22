@@ -41,6 +41,7 @@ catch {
 $script:Results = @()
 $script:ValidCount = 0
 $script:LastValidatedPath = $null
+$script:Policies = @()
 
 # ---------------------------------------------------------------------------
 # Form
@@ -135,10 +136,61 @@ $btnPreview.Anchor = 'Top,Right'
 $btnPreview.Enabled = $false
 $grpFile.Controls.Add($btnPreview)
 
+# --- Policy management -----------------------------------------------------
+$grpPolicies = New-Object System.Windows.Forms.GroupBox
+$grpPolicies.Text = '3. Manage existing policies (refresh, preview, delete)'
+$grpPolicies.Location = New-Object System.Drawing.Point(12, 172)
+$grpPolicies.Size = New-Object System.Drawing.Size(1140, 150)
+$grpPolicies.Anchor = 'Top,Left,Right'
+$form.Controls.Add($grpPolicies)
+
+$policyList = New-Object System.Windows.Forms.ListView
+$policyList.Location = New-Object System.Drawing.Point(14, 27)
+$policyList.Size = New-Object System.Drawing.Size(730, 108)
+$policyList.View = [System.Windows.Forms.View]::Details
+$policyList.FullRowSelect = $true
+$policyList.GridLines = $true
+$policyList.MultiSelect = $false
+$policyList.HideSelection = $false
+$policyList.Anchor = 'Top,Left,Right'
+foreach ($c in @(
+    @{ N = 'Id'; H = 'Policy id'; W = 260 },
+    @{ N = 'Name'; H = 'Policy name'; W = 300 },
+    @{ N = 'Type'; H = 'Assignment'; W = 130 }
+)) {
+    [void]$policyList.Columns.Add($c.H, $c.W)
+}
+$grpPolicies.Controls.Add($policyList)
+
+$btnRefreshPolicies = New-Object System.Windows.Forms.Button
+$btnRefreshPolicies.Text = 'Refresh list'
+$btnRefreshPolicies.Location = New-Object System.Drawing.Point(756, 32)
+$btnRefreshPolicies.Size = New-Object System.Drawing.Size(110, 30)
+$btnRefreshPolicies.Anchor = 'Top,Right'
+$btnRefreshPolicies.Enabled = $false
+$grpPolicies.Controls.Add($btnRefreshPolicies)
+
+$btnPreviewDelete = New-Object System.Windows.Forms.Button
+$btnPreviewDelete.Text = 'Preview delete'
+$btnPreviewDelete.Location = New-Object System.Drawing.Point(874, 32)
+$btnPreviewDelete.Size = New-Object System.Drawing.Size(115, 30)
+$btnPreviewDelete.Anchor = 'Top,Right'
+$btnPreviewDelete.Enabled = $false
+$grpPolicies.Controls.Add($btnPreviewDelete)
+
+$btnDeletePolicy = New-Object System.Windows.Forms.Button
+$btnDeletePolicy.Text = 'Delete selected'
+$btnDeletePolicy.Location = New-Object System.Drawing.Point(997, 32)
+$btnDeletePolicy.Size = New-Object System.Drawing.Size(125, 30)
+$btnDeletePolicy.Anchor = 'Top,Right'
+$btnDeletePolicy.Enabled = $false
+$btnDeletePolicy.BackColor = [System.Drawing.Color]::FromArgb(253, 231, 233)
+$grpPolicies.Controls.Add($btnDeletePolicy)
+
 # --- Results grid ----------------------------------------------------------
 $grid = New-Object System.Windows.Forms.DataGridView
-$grid.Location = New-Object System.Drawing.Point(12, 172)
-$grid.Size = New-Object System.Drawing.Size(1140, 300)
+$grid.Location = New-Object System.Drawing.Point(12, 332)
+$grid.Size = New-Object System.Drawing.Size(1140, 220)
 $grid.Anchor = 'Top,Bottom,Left,Right'
 $grid.ReadOnly = $true
 $grid.AllowUserToAddRows = $false
@@ -169,9 +221,9 @@ foreach ($c in @(
 # --- Commit + progress -----------------------------------------------------
 $grpCommit = New-Object System.Windows.Forms.GroupBox
 $grpCommit.Text = '3. Create the policies'
-$grpCommit.Location = New-Object System.Drawing.Point(12, 480)
+$grpCommit.Location = New-Object System.Drawing.Point(12, 560)
 $grpCommit.Size = New-Object System.Drawing.Size(1140, 72)
-$grpCommit.Anchor = 'Bottom,Left,Right'
+$grpCommit.Anchor = 'Top,Left,Right'
 $form.Controls.Add($grpCommit)
 
 $btnCommit = New-Object System.Windows.Forms.Button
@@ -198,8 +250,8 @@ $grpCommit.Controls.Add($btnExport)
 
 # --- Log -------------------------------------------------------------------
 $txtLog = New-Object System.Windows.Forms.TextBox
-$txtLog.Location = New-Object System.Drawing.Point(12, 558)
-$txtLog.Size = New-Object System.Drawing.Size(1140, 140)
+$txtLog.Location = New-Object System.Drawing.Point(12, 638)
+$txtLog.Size = New-Object System.Drawing.Size(1140, 60)
 $txtLog.Anchor = 'Bottom,Left,Right'
 $txtLog.Multiline = $true
 $txtLog.ScrollBars = 'Vertical'
@@ -256,6 +308,64 @@ function Format-GuiAlerts {
     return ($parts -join ', ')
 }
 
+function Get-GuiPolicyProperty {
+    param($Policy, [string[]]$Names)
+    foreach ($name in $Names) {
+        if ($null -eq $Policy) { continue }
+        if ($Policy.PSObject.Properties.Name -contains $name -and $null -ne $Policy.$name) {
+            return [string]$Policy.$name
+        }
+        if ($Policy.PSObject.Properties.Name -contains 'AdditionalProperties' -and
+            $Policy.AdditionalProperties -is [System.Collections.IDictionary] -and
+            $Policy.AdditionalProperties.Contains($name) -and
+            $null -ne $Policy.AdditionalProperties[$name]) {
+            return [string]$Policy.AdditionalProperties[$name]
+        }
+    }
+    return ''
+}
+
+function Refresh-GuiPolicies {
+    try {
+        Set-GuiStatus 'Refreshing spending policies...'
+        $btnRefreshPolicies.Enabled = $false
+        # Get-CoworkSpendingPolicy returns the collection as one pipeline object;
+        # assign it first, then enumerate its elements for the ListView.
+        $fetchedPolicies = Get-CoworkSpendingPolicy -Refresh
+        $script:Policies = if ($fetchedPolicies -is [System.Array]) { @($fetchedPolicies) } else { @($fetchedPolicies) }
+        $policyList.Items.Clear()
+        foreach ($policy in $script:Policies) {
+            $id = Get-GuiPolicyProperty -Policy $policy -Names @('id', 'Id')
+            $name = Get-GuiPolicyProperty -Policy $policy -Names @('displayName', 'name')
+            $type = Get-GuiPolicyProperty -Policy $policy -Names @('assignmentType', '@odata.type', 'type')
+            if ($type -match 'selectedGroups') { $type = 'Groups' }
+            elseif ($type -match 'allUsers') { $type = 'All users' }
+            $item = New-Object System.Windows.Forms.ListViewItem($id)
+            [void]$item.SubItems.Add($name)
+            [void]$item.SubItems.Add($type)
+            $item.Tag = $policy
+            [void]$policyList.Items.Add($item)
+        }
+        Set-GuiStatus "Policy list refreshed: $($script:Policies.Count) found."
+    }
+    catch {
+        Show-GuiError "Could not refresh spending policies.`n`n$($_.Exception.Message)"
+        Set-GuiStatus 'Policy refresh failed.'
+    }
+    finally {
+        $btnRefreshPolicies.Enabled = $true
+        Update-GuiButtons
+    }
+}
+
+function Get-GuiSelectedPolicy {
+    if ($policyList.SelectedItems.Count -eq 0) {
+        Show-GuiError 'Select a spending policy first.'
+        return $null
+    }
+    return $policyList.SelectedItems[0]
+}
+
 function Update-GuiGrid {
     param($Results)
 
@@ -300,6 +410,10 @@ function Update-GuiButtons {
     $btnPreview.Enabled = ($connected -and $hasPath)
     $btnTestEndpoint.Enabled = $connected
     $btnDisconnect.Enabled = $connected
+    $hasPolicy = ($connected -and $policyList.SelectedItems.Count -gt 0)
+    $btnRefreshPolicies.Enabled = $connected
+    $btnPreviewDelete.Enabled = $hasPolicy
+    $btnDeletePolicy.Enabled = $hasPolicy
     $btnCommit.Enabled = ($connected -and $script:ValidCount -gt 0 -and $script:LastValidatedPath -eq $txtPath.Text)
     $btnExport.Enabled = (@($script:Results).Count -gt 0)
 }
@@ -321,6 +435,7 @@ $btnConnect.Add_Click({
         $lblAccount.Text = "Connected as $($ctx.Account)  |  Tenant $($ctx.TenantId)"
         $lblAccount.ForeColor = [System.Drawing.Color]::DarkGreen
         Set-GuiStatus 'Connected.'
+        Refresh-GuiPolicies
     }
     catch {
         $lblAccount.Text = 'Not connected.'
@@ -339,8 +454,61 @@ $btnDisconnect.Add_Click({
     $lblAccount.Text = 'Not connected.'
     $lblAccount.ForeColor = [System.Drawing.Color]::DimGray
     $script:ValidCount = 0
+    $script:Policies = @()
+    $policyList.Items.Clear()
     Set-GuiStatus 'Signed out.'
     Update-GuiButtons
+})
+
+$btnRefreshPolicies.Add_Click({ Refresh-GuiPolicies })
+
+$policyList.Add_SelectedIndexChanged({ Update-GuiButtons })
+
+$btnPreviewDelete.Add_Click({
+    $item = Get-GuiSelectedPolicy
+    if ($null -eq $item) { return }
+    try {
+        Set-GuiStatus 'Previewing policy deletion...'
+        $preview = Remove-CoworkSpendingPolicy -Id $item.Text
+        [System.Windows.Forms.MessageBox]::Show(
+            "No changes were made.`n`nPolicy: $($preview.PolicyName)`nId: $($preview.PolicyId)`nAction: $($preview.Status)",
+            'Delete preview', 'OK', 'Information') | Out-Null
+        Set-GuiStatus 'Delete preview complete. Nothing was deleted.'
+    }
+    catch {
+        Show-GuiError "Could not preview deletion.`n`n$($_.Exception.Message)"
+        Set-GuiStatus 'Delete preview failed.'
+    }
+})
+
+$btnDeletePolicy.Add_Click({
+    $item = Get-GuiSelectedPolicy
+    if ($null -eq $item) { return }
+    try {
+        Set-GuiStatus 'Checking selected policy before deletion...'
+        $preview = Remove-CoworkSpendingPolicy -Id $item.Text
+        $answer = [System.Windows.Forms.MessageBox]::Show(
+            "Preview: this will permanently delete the following policy:`n`n$($preview.PolicyName)`nId: $($preview.PolicyId)`n`nContinue?",
+            'Confirm policy deletion', 'YesNo', 'Warning')
+        if ($answer -ne 'Yes') {
+            Set-GuiStatus 'Deletion cancelled.'
+            return
+        }
+        $result = Remove-CoworkSpendingPolicy -Id $preview.PolicyId -Commit -Force
+        if ($result.Status -eq 'Deleted') {
+            [System.Windows.Forms.MessageBox]::Show("Deleted policy:`n$($result.PolicyName)", 'Policy deleted', 'OK', 'Information') | Out-Null
+            Refresh-GuiPolicies
+        }
+        else {
+            Show-GuiError "The policy was not deleted.`n`nStatus: $($result.Status)`n$($result.Error)"
+            Set-GuiStatus 'Policy deletion failed.'
+        }
+    }
+    catch {
+        Show-GuiError "Could not delete the selected policy.`n`n$($_.Exception.Message)"
+        Set-GuiStatus 'Policy deletion failed.'
+    }
+    finally { Update-GuiButtons }
 })
 
 $btnTestEndpoint.Add_Click({
@@ -916,6 +1084,7 @@ catch {
     Write-GuiLog "Could not load configuration: $($_.Exception.Message)"
 }
 Write-GuiLog "Sign in, pick a CSV, then Validate. Commit stays disabled until validation passes."
+Write-GuiLog "Existing policies can be refreshed and safely previewed/deleted from the policy management section."
 Write-GuiLog ""
 
 Update-GuiButtons

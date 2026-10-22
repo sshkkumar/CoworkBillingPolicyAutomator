@@ -4,7 +4,7 @@
     GUID              = 'b7e9a4c1-5f3d-4a86-9c21-0d47f8e26b3a'
     Author            = 'Cowork Billing Policy Automator'
     CompanyName       = 'Microsoft'
-    Description       = 'Bulk-create Microsoft Copilot Cowork spending (billing) policies from a CSV file, with full pre-flight validation, validate-only by default, and rollback on partial failure.'
+    Description       = 'Create and safely delete Microsoft Copilot Cowork spending (billing) policies, with pre-flight validation, preview-by-default workflows, ETag protection, and rollback on partial failure.'
 
     PowerShellVersion = '5.1'
 
@@ -21,6 +21,7 @@
         'Set-CoworkBillingRootPath'
         'Test-CoworkPolicyFile'
         'Invoke-CoworkPolicyImport'
+        'Remove-CoworkSpendingPolicy'
         'New-CoworkPolicyTemplate'
         'Get-CoworkTenantCreditBalance'
         'Get-CoworkSpendingPolicy'

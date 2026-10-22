@@ -14,6 +14,7 @@ $partFiles = @(
     'Cowork.CsvSchema.ps1'
     'Cowork.Validation.ps1'
     'Cowork.Creation.ps1'
+    'Cowork.Deletion.ps1'
     'Cowork.Public.ps1'
 )
 
@@ -35,6 +36,7 @@ Export-ModuleMember -Function @(
     # Main workflow
     'Test-CoworkPolicyFile'
     'Invoke-CoworkPolicyImport'
+    'Remove-CoworkSpendingPolicy'
     'New-CoworkPolicyTemplate'
 
     # Reading tenant state

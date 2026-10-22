@@ -177,9 +177,14 @@ function Get-CoworkPolicyETag {
         if ($Object -and $Object.PSObject.Properties.Name -contains $n -and $Object.$n) {
             return [string]$Object.$n
         }
+        if ($Object -and $Object.PSObject.Properties.Name -contains 'AdditionalProperties' -and
+            $Object.AdditionalProperties -is [System.Collections.IDictionary] -and
+            $Object.AdditionalProperties.Contains($n) -and $Object.AdditionalProperties[$n]) {
+            return [string]$Object.AdditionalProperties[$n]
+        }
     }
 
-    if ((Get-CoworkContext).WhatIfPayload -or $PolicyId -like 'whatif-*') { return $null }
+    if ((Get-CoworkContext).WhatIfPayload -or $PolicyId -like 'whatif-*' -or [string]::IsNullOrWhiteSpace($PolicyId)) { return $null }
 
     try {
         $p = Invoke-CoworkGraphRequest -Path "spendingPolicies/$PolicyId" -Method GET -SuppressWhatIf
