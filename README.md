@@ -103,8 +103,7 @@ hang off. The tool composes it from `config.json`:
 https://graph.microsoft.com  /beta  /copilot/billing
 ```
 
-`copilot/billing` is a **documented best guess**. If it is wrong you get a clear HTTP 404
-message naming the exact key to change — no code edits are needed.
+
 
 ```powershell
 # Probe every candidate and report which one works
